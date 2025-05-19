@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برنامه دانش آموزی</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f8fafc;
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+        
+        .timer-circle {
+            width: 200px;
+            height: 200px;
+            border: 8px solid #e2e8f0;
+            border-top: 8px solid #6366f1;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .flip-card {
+            perspective: 1000px;
+        }
+        
+        .flip-card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .flip-card-front, .flip-card-back {
+            backface-visibility: hidden;
+        }
+        
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+        
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+        
+        .nav-item.active {
+            color: #6366f1;
+            border-top: 3px solid #6366f1;
+        }
+        
+        .nav-item i {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 20px;
+        }
+        
+        .nav-item span {
+            font-size: 12px;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .calculator-btn {
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-4">
+        <!-- هدر برنامه -->
+        <header class="gradient-bg text-white rounded-xl shadow-lg p-4 mb-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold">برنامه دانش آموزی</h1>
+                    <p class="mt-1 opacity-90 text-sm">ابزارهای مفید برای موفقیت تحصیلی</p>
+                </div>
+                <div class="flex space-x-2 space-x-reverse">
+                    <button class="bg-white text-indigo-600 px-3 py-1 rounded-lg text-sm font-medium hover:bg-indigo-50 transition">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <button class="bg-white text-indigo-600 px-3 py-1 rounded-lg text-sm font-medium hover:bg-indigo-50 transition">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- بخش‌های اصلی برنامه -->
+        
+        <!-- زمان‌سنج -->
+        <div id="timer-section" class="section active">
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">زمان‌سنج مطالعه</h2>
+                    <i class="fas fa-clock text-indigo-500 text-xl"></i>
+                </div>
+                
+                <div class="flex flex-col items-center justify-center my-4">
+                    <div class="relative">
+                        <svg class="w-40 h-40">
+                            <circle
+                                class="progress-ring__circle"
+                                stroke="#e2e8f0"
+                                stroke-width="8"
+                                fill="transparent"
+                                r="70"
+                                cx="80"
+                                cy="80"
+                            />
+                            <circle
+                                class="progress-ring__circle"
+                                stroke="#6366f1"
+                                stroke-width="8"
+                                stroke-dasharray="439.8"
+                                stroke-dashoffset="0"
+                                fill="transparent"
+                                r="70"
+                                cx="80"
+                                cy="80"
+                                id="progress-ring"
+                            />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <div id="timer-display" class="text-3xl font-bold text-gray-800">25:00</div>
+                                <div id="timer-state" class="text-gray-500 mt-1 text-sm">آماده</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center space-x-2 space-x-reverse mb-3">
+                    <button id="start-timer" class="bg-green-500 text-white px-4 py-1 rounded-lg text-sm font-medium hover:bg-green-600 transition">
+                        <i class="fas fa-play ml-1"></i>شروع
+                    </button>
+                    <button id="pause-timer" class="bg-yellow-500 text-white px-4 py-1 rounded-lg text-sm font-medium hover:bg-yellow-600 transition">
+                        <i class="fas fa-pause ml-1"></i>توقف
+                    </button>
+                    <button id="reset-timer" class="bg-red-500 text-white px-4 py-1 rounded-lg text-sm font-medium hover:bg-red-600 transition">
+                        <i class="fas fa-redo ml-1"></i>بازنشانی
+                    </button>
+                </div>
+                
+                <div class="mt-4">
+                    <label for="timer-duration" class="block text-xs font-medium text-gray-700 mb-1">مدت زمان (دقیقه)</label>
+                    <div class="flex">
+                        <input type="number" id="timer-duration" min="1" max="120" value="25" 
+                               class="flex-1 border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <button id="set-timer" class="bg-indigo-500 text-white px-3 py-1 rounded-lg text-sm font-medium hover:bg-indigo-600 transition mr-2">
+                            تنظیم
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- برنامه‌ریزی درسی -->
+        <div id="schedule-section" class="section">
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">برنامه‌ریزی درسی</h2>
+                    <i class="fas fa-calendar-alt text-indigo-500 text-xl"></i>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="subject" class="block text-xs font-medium text-gray-700 mb-1">درس</label>
+                    <input type="text" id="subject" placeholder="نام درس" 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="study-date" class="block text-xs font-medium text-gray-700 mb-1">تاریخ</label>
+                    <input type="date" id="study-date" 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="study-time" class="block text-xs font-medium text-gray-700 mb-1">زمان مطالعه</label>
+                    <input type="time" id="study-time" 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <button id="add-schedule" class="w-full bg-indigo-500 text-white px-3 py-1 rounded-lg text-sm font-medium hover:bg-indigo-600 transition">
+                    <i class="fas fa-plus ml-1"></i>افزودن به برنامه
+                </button>
+                
+                <div class="mt-4">
+                    <h3 class="font-medium text-gray-700 mb-1 text-sm">برنامه‌های آینده</h3>
+                    <ul id="schedule-list" class="divide-y divide-gray-200 text-sm">
+                        <!-- برنامه‌ها اینجا نمایش داده می‌شوند -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- مدیریت تکالیف -->
+        <div id="tasks-section" class="section">
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">مدیریت تکالیف</h2>
+                    <i class="fas fa-tasks text-indigo-500 text-xl"></i>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="task-title" class="block text-xs font-medium text-gray-700 mb-1">عنوان تکلیف</label>
+                    <input type="text" id="task-title" placeholder="مثال: تمرین صفحه 23 ریاضی" 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="task-due" class="block text-xs font-medium text-gray-700 mb-1">مهلت تحویل</label>
+                    <input type="date" id="task-due" 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="task-priority" class="block text-xs font-medium text-gray-700 mb-1">اولویت</label>
+                    <select id="task-priority" 
+                            class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="low">کم</option>
+                        <option value="medium" selected>متوسط</option>
+                        <option value="high">زیاد</option>
+                    </select>
+                </div>
+                
+                <button id="add-task" class="w-full bg-indigo-500 text-white px-3 py-1 rounded-lg text-sm font-medium hover:bg-indigo-600 transition">
+                    <i class="fas fa-plus ml-1"></i>افزودن تکلیف
+                </button>
+                
+                <div class="mt-4">
+                    <h3 class="font-medium text-gray-700 mb-1 text-sm">تکالیف من</h3>
+                    <ul id="task-list" class="divide-y divide-gray-200 text-sm">
+                        <!-- تکالیف اینجا نمایش داده می‌شوند -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- فلش کارت‌ها -->
+        <div id="flashcards-section" class="section">
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">فلش کارت‌ها</h2>
+                    <i class="fas fa-layer-group text-indigo-500 text-xl"></i>
+                </div>
+                
+                <div class="flip-card h-48 mb-4" onclick="flipCard()">
+                    <div class="flip-card-inner w-full h-full">
+                        <div class="flip-card-front bg-indigo-50 rounded-lg p-4 flex flex-col items-center justify-center h-full">
+                            <p class="text-gray-500 mb-2 text-sm">سوال</p>
+                            <p id="flashcard-question" class="text-lg font-medium text-center">پایتخت ایران کدام شهر است؟</p>
+                        </div>
+                        <div class="flip-card-back bg-indigo-100 rounded-lg p-4 flex flex-col items-center justify-center h-full">
+                            <p class="text-gray-500 mb-2 text-sm">پاسخ</p>
+                            <p id="flashcard-answer" class="text-lg font-medium text-center">تهران</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between mb-4">
+                    <button id="prev-card" class="bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
+                        <i class="fas fa-arrow-right ml-1"></i>قبلی
+                    </button>
+                    <button id="next-card" class="bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm font-medium hover:bg-gray-300 transition">
+                        بعدی <i class="fas fa-arrow-left mr-1"></i>
+                    </button>
+                </div>
+                
+                <div class="mt-4">
+                    <h3 class="font-medium text-gray-700 mb-1 text-sm">افزودن فلش کارت جدید</h3>
+                    <div class="mb-3">
+                        <input type="text" id="new-question" placeholder="سوال" 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm mb-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="text" id="new-answer" placeholder="پاسخ" 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <button id="add-flashcard" class="w-full bg-indigo-500 text-white px-3 py-1 rounded-lg text-sm font-medium hover:bg-indigo-600 transition">
+                        <i class="fas fa-plus ml-1"></i>افزودن فلش کارت
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ماشین حساب -->
+        <div id="calculator-section" class="section">
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">ماشین حساب علمی</h2>
+                    <i class="fas fa-calculator text-indigo-500 text-xl"></i>
+                </div>
+                
+                <div class="mb-3">
+                    <input type="text" id="calculator-display" value="0" readonly 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-right text-xl font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                
+                <div class="grid grid-cols-4 gap-1">
+                    <button class="calculator-btn bg-gray-200 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition" value="C">C</button>
+                    <button class="calculator-btn bg-gray-200 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition" value="±">±</button>
+                    <button class="calculator-btn bg-gray-200 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition" value="%">%</button>
+                    <button class="calculator-btn bg-indigo-500 text-white p-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition" value="/">/</button>
+                    
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value="7">7</button>
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value="8">8</button>
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value="9">9</button>
+                    <button class="calculator-btn bg-indigo-500 text-white p-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition" value="*">×</button>
+                    
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value="4">4</button>
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value="5">5</button>
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value="6">6</button>
+                    <button class="calculator-btn bg-indigo-500 text-white p-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition" value="-">-</button>
+                    
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value="1">1</button>
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value="2">2</button>
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value="3">3</button>
+                    <button class="calculator-btn bg-indigo-500 text-white p-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition" value="+">+</button>
+                    
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value="0">0</button>
+                    <button class="calculator-btn bg-gray-100 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition" value=".">.</button>
+                    <button class="calculator-btn bg-indigo-500 text-white p-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition col-span-2" value="=">=</button>
+                    
+                    <button class="calculator-btn bg-gray-200 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition" value="√">√</button>
+                    <button class="calculator-btn bg-gray-200 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition" value="^">^</button>
+                    <button class="calculator-btn bg-gray-200 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition" value="(">(</button>
+                    <button class="calculator-btn bg-gray-200 text-gray-800 p-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition" value=")">)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- یادداشت‌ها -->
+        <div id="notes-section" class="section">
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold text-gray-800">یادداشت‌های سریع</h2>
+                    <i class="fas fa-sticky-note text-indigo-500 text-xl"></i>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="note-title" class="block text-xs font-medium text-gray-700 mb-1">عنوان یادداشت</label>
+                    <input type="text" id="note-title" placeholder="عنوان" 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="note-content" class="block text-xs font-medium text-gray-700 mb-1">محتوا</label>
+                    <textarea id="note-content" rows="3" placeholder="متن یادداشت..." 
+                              class="w-full border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+                
+                <button id="add-note" class="w-full bg-indigo-500 text-white px-3 py-1 rounded-lg text-sm font-medium hover:bg-indigo-600 transition">
+                    <i class="fas fa-plus ml-1"></i>ذخیره یادداشت
+                </button>
+                
+                <div class="mt-4">
+                    <h3 class="font-medium text-gray-700 mb-1 text-sm">یادداشت‌های من</h3>
+                    <div id="notes-container" class="grid grid-cols-1 gap-2 text-sm">
+                        <!-- یادداشت‌ها اینجا نمایش داده می‌شوند -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- منوی پایین صفحه -->
+    <div class="bottom-nav flex">
+        <div class="nav-item active" data-section="timer-section">
+            <i class="fas fa-clock"></i>
+            <span>زمان‌سنج</span>
+        </div>
+        <div class="nav-item" data-section="schedule-section">
+            <i class="fas fa-calendar-alt"></i>
+            <span>برنامه‌ریزی</span>
+        </div>
+        <div class="nav-item" data-section="tasks-section">
+            <i class="fas fa-tasks"></i>
+            <span>تکالیف</span>
+        </div>
+        <div class="nav-item" data-section="flashcards-section">
+            <i class="fas fa-layer-group"></i>
+            <span>فلش کارت</span>
+        </div>
+        <div class="nav-item" data-section="calculator-section">
+            <i class="fas fa-calculator"></i>
+            <span>ماشین حساب</span>
+        </div>
+        <div class="nav-item" data-section="notes-section">
+            <i class="fas fa-sticky-note"></i>
+            <span>یادداشت‌ها</span>
+        </div>
+    </div>
+
+    <script>
+        // زمان‌سنج مطالعه
+        let timerInterval;
+        let timeLeft = 25 * 60; // 25 دقیقه به ثانیه
+        let isRunning = false;
+        let isPaused = false;
+        const timerDisplay = document.getElementById('timer-display');
+        const timerState = document.getElementById('timer-state');
+        const progressRing = document.getElementById('progress-ring');
+        const circumference = 2 * Math.PI * 70;
+        
+        progressRing.style.strokeDasharray = circumference;
+        progressRing.style.strokeDashoffset = circumference;
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update progress ring
+            const progress = ((25 * 60) - timeLeft) / (25 * 60) * circumference;
+            progressRing.style.strokeDashoffset = circumference - progress;
+        }
+        
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                isPaused = false;
+                timerState.textContent = 'در حال اجرا';
+                
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        timerState.textContent = 'تکمیل شد';
+                        alert('زمان مطالعه شما به پایان رسید! استراحت کنید.');
+                    }
+                }, 1000);
+            } else if (isPaused) {
+                isPaused = false;
+                timerState.textContent = 'در حال اجرا';
+                
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        timerState.textContent = 'تکمیل شد';
+                        alert('زمان مطالعه شما به پایان رسید! استراحت کنید.');
+                    }
+                }, 1000);
+            }
+        }
+        
+        function pauseTimer() {
+            if (isRunning && !isPaused) {
+                clearInterval(timerInterval);
+                isPaused = true;
+                timerState.textContent = 'متوقف شده';
+            }
+        }
+        
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            isPaused = false;
+            timeLeft = 25 * 60;
+            updateTimerDisplay();
+            timerState.textContent = 'آماده';
+            progressRing.style.strokeDashoffset = circumference;
+        }
+        
+        function setTimer() {
+            const duration = parseInt(document.getElementById('timer-duration').value);
+            if (duration > 0 && duration <= 120) {
+                timeLeft = duration * 60;
+                updateTimerDisplay();
+                alert(`زمان‌سنج روی ${duration} دقیقه تنظیم شد.`);
+            } else {
+                alert('لطفاً عددی بین 1 تا 120 وارد کنید.');
+            }
+        }
+        
+        document.getElementById('start-timer').addEventListener('click', startTimer);
+        document.getElementById('pause-timer').addEventListener('click', pauseTimer);
+        document.getElementById('reset-timer').addEventListener('click', resetTimer);
+        document.getElementById('set-timer').addEventListener('click', setTimer);
+        
+        // برنامه‌ریزی درسی
+        const scheduleList = document.getElementById('schedule-list');
+        
+        function addSchedule() {
+            const subject = document.getElementById('subject').value;
+            const date = document.getElementById('study-date').value;
+            const time = document.getElementById('study-time').value;
+            
+            if (subject && date && time) {
+                const scheduleItem = document.createElement('li');
+                scheduleItem.className = 'py-2';
+                
+                const dateObj = new Date(date);
+                const persianDate = dateObj.toLocaleDateString('fa-IR');
+                
+                scheduleItem.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium">${subject}</h4>
+                            <p class="text-xs text-gray-500">${persianDate} - ${time}</p>
+                        </div>
+                        <button class="delete-schedule text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                `;
+                
+                scheduleList.appendChild(scheduleItem);
+                
+                // پاک کردن فیلدها
+                document.getElementById('subject').value = '';
+                document.getElementById('study-date').value = '';
+                document.getElementById('study-time').value = '';
+                
+                // اضافه کردن رویداد حذف
+                scheduleItem.querySelector('.delete-schedule').addEventListener('click', function() {
+                    scheduleList.removeChild(scheduleItem);
+                });
+            } else {
+                alert('لطفاً همه فیلدها را پر کنید.');
+            }
+        }
+        
+        document.getElementById('add-schedule').addEventListener('click', addSchedule);
+        
+        // مدیریت تکالیف
+        const taskList = document.getElementById('task-list');
+        
+        function addTask() {
+            const title = document.getElementById('task-title').value;
+            const due = document.getElementById('task-due').value;
+            const priority = document.getElementById('task-priority').value;
+            
+            if (title && due) {
+                const taskItem = document.createElement('li');
+                taskItem.className = 'py-2';
+                
+                const dueDate = new Date(due);
+                const persianDate = dueDate.toLocaleDateString('fa-IR');
+                
+                let priorityBadge = '';
+                if (priority === 'high') {
+                    priorityBadge = '<span class="bg-red-100 text-red-800 text-xs px-1 py-0.5 rounded ml-2">زیاد</span>';
+                } else if (priority === 'medium') {
+                    priorityBadge = '<span class="bg-yellow-100 text-yellow-800 text-xs px-1 py-0.5 rounded ml-2">متوسط</span>';
+                } else {
+                    priorityBadge = '<span class="bg-green-100 text-green-800 text-xs px-1 py-0.5 rounded ml-2">کم</span>';
+                }
+                
+                taskItem.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="flex items-center">
+                                <h4 class="font-medium">${title}</h4>
+                                ${priorityBadge}
+                            </div>
+                            <p class="text-xs text-gray-500">مهلت: ${persianDate}</p>
+                        </div>
+                        <div>
+                            <button class="complete-task text-green-500 hover:text-green-700 ml-2">
+                                <i class="fas fa-check text-sm"></i>
+                            </button>
+                            <button class="delete-task text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                taskList.appendChild(taskItem);
+                
+                // پاک کردن فیلدها
+                document.getElementById('task-title').value = '';
+                document.getElementById('task-due').value = '';
+                document.getElementById('task-priority').value = 'medium';
+                
+                // اضافه کردن رویدادها
+                taskItem.querySelector('.delete-task').addEventListener('click', function() {
+                    taskList.removeChild(taskItem);
+                });
+                
+                taskItem.querySelector('.complete-task').addEventListener('click', function() {
+                    taskItem.style.opacity = '0.6';
+                    taskItem.querySelector('h4').style.textDecoration = 'line-through';
+                });
+            } else {
+                alert('لطفاً عنوان و مهلت تکلیف را وارد کنید.');
+            }
+        }
+        
+        document.getElementById('add-task').addEventListener('click', addTask);
+        
+        // فلش کارت‌ها
+        const flashcards = [
+            { question: "پایتخت ایران کدام شهر است؟", answer: "تهران" },
+            { question: "بزرگترین سیاره منظومه شمسی کدام است؟", answer: "مشتری" },
+            { question: "فرمول شیمیایی آب چیست؟", answer: "H₂O" }
+        ];
+        
+        let currentCardIndex = 0;
+        const flashcardQuestion = document.getElementById('flashcard-question');
+        const flashcardAnswer = document.getElementById('flashcard-answer');
+        
+        function updateFlashcard() {
+            flashcardQuestion.textContent = flashcards[currentCardIndex].question;
+            flashcardAnswer.textContent = flashcards[currentCardIndex].answer;
+        }
+        
+        function nextCard() {
+            currentCardIndex = (currentCardIndex + 1) % flashcards.length;
+            updateFlashcard();
+            // Reset card to front
+            document.querySelector('.flip-card-inner').classList.remove('flip-card-inner-rotated');
+        }
+        
+        function prevCard() {
+            currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
+            updateFlashcard();
+            // Reset card to front
+            document.querySelector('.flip-card-inner').classList.remove('flip-card-inner-rotated');
+        }
+        
+        function flipCard() {
+            document.querySelector('.flip-card-inner').classList.toggle('flip-card-inner-rotated');
+        }
+        
+        function addFlashcard() {
+            const question = document.getElementById('new-question').value;
+            const answer = document.getElementById('new-answer').value;
+            
+            if (question && answer) {
+                flashcards.push({ question, answer });
+                currentCardIndex = flashcards.length - 1;
+                updateFlashcard();
+                
+                // پاک کردن فیلدها
+                document.getElementById('new-question').value = '';
+                document.getElementById('new-answer').value = '';
+                
+                alert('فلش کارت جدید اضافه شد!');
+            } else {
+                alert('لطفاً هم سوال و هم پاسخ را وارد کنید.');
+            }
+        }
+        
+        document.getElementById('next-card').addEventListener('click', nextCard);
+        document.getElementById('prev-card').addEventListener('click', prevCard);
+        document.getElementById('add-flashcard').addEventListener('click', addFlashcard);
+        
+        // ماشین حساب علمی
+        let currentInput = '0';
+        let previousInput = '';
+        let operation = null;
+        let resetScreen = false;
+        const calculatorDisplay = document.getElementById('calculator-display');
+        
+        function updateDisplay() {
+            calculatorDisplay.value = currentInput;
+        }
+        
+        function appendNumber(number) {
+            if (currentInput === '0' || resetScreen) {
+                currentInput = number;
+                resetScreen = false;
+            } else {
+                currentInput += number;
+            }
+            updateDisplay();
+        }
+        
+        function appendDecimal() {
+            if (resetScreen) {
+                currentInput = '0.';
+                resetScreen = false;
+                updateDisplay();
+                return;
+            }
+            if (!currentInput.includes('.')) {
+                currentInput += '.';
+                updateDisplay();
+            }
+        }
+        
+        function handleOperator(op) {
+            if (operation !== null) calculate();
+            previousInput = currentInput;
+            operation = op;
+            resetScreen = true;
+        }
+        
+        function calculate() {
+            let result;
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+            
+            if (isNaN(prev) || isNaN(current)) return;
+            
+            switch (operation) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    result = prev / current;
+                    break;
+                case '^':
+                    result = Math.pow(prev, current);
+                    break;
+                default:
+                    return;
+            }
+            
+            currentInput = result.toString();
+            operation = null;
+            updateDisplay();
+        }
+        
+        function clearAll() {
+            currentInput = '0';
+            previousInput = '';
+            operation = null;
+            updateDisplay();
+        }
+        
+        function toggleSign() {
+            currentInput = (parseFloat(currentInput) * -1).toString();
+            updateDisplay();
+        }
+        
+        function percentage() {
+            currentInput = (parseFloat(currentInput) / 100).toString();
+            updateDisplay();
+        }
+        
+        function squareRoot() {
+            currentInput = Math.sqrt(parseFloat(currentInput)).toString();
+            updateDisplay();
+        }
+        
+        document.querySelectorAll('.calculator-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const value = button.value;
+                
+                if (value >= '0' && value <= '9') {
+                    appendNumber(value);
+                } else if (value === '.') {
+                    appendDecimal();
+                } else if (value === 'C') {
+                    clearAll();
+                } else if (value === '±') {
+                    toggleSign();
+                } else if (value === '%') {
+                    percentage();
+                } else if (value === '√') {
+                    squareRoot();
+                } else if (value === '=') {
+                    calculate();
+                } else {
+                    handleOperator(value);
+                }
+            });
+        });
+        
+        // یادداشت‌های سریع
+        const notesContainer = document.getElementById('notes-container');
+        
+        function addNote() {
+            const title = document.getElementById('note-title').value;
+            const content = document.getElementById('note-content').value;
+            
+            if (title && content) {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'bg-indigo-50 rounded-lg p-3';
+                
+                noteElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <h4 class="font-medium">${title}</h4>
+                        <button class="delete-note text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                    <p class="text-gray-700 text-xs">${content}</p>
+                `;
+                
+                notesContainer.appendChild(noteElement);
+                
+                // پاک کردن فیلدها
+                document.getElementById('note-title').value = '';
+                document.getElementById('note-content').value = '';
+                
+                // اضافه کردن رویداد حذف
+                noteElement.querySelector('.delete-note').addEventListener('click', function() {
+                    notesContainer.removeChild(noteElement);
+                });
+            } else {
+                alert('لطفاً عنوان و محتوای یادداشت را وارد کنید.');
+            }
+        }
+        
+        document.getElementById('add-note').addEventListener('click', addNote);
+        
+        // ناوبری پایین صفحه
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        navItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all items
+                navItems.forEach(navItem => {
+                    navItem.classList.remove('active');
+                });
+                
+                // Add active class to clicked item
+                this.classList.add('active');
+                
+                // Hide all sections
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show selected section
+                const sectionId = this.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+        
+        // مقداردهی اولیه
+        updateTimerDisplay();
+        updateFlashcard();
+        updateDisplay();
+    </script>
+</body>
+</html>
